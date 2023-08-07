@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Panel</title>
+    <style>
+        /* Add some basic styling to the page */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: center;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .table-container {
+            width: 100%;
+        }
+        #homeIconLink{
+            color: black;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<h2>User Management  <a id="homeIconLink" href="index.html"><i class="fa-solid fa-house"></i></a></h2>
+<div class="table-container">
+    <table id="userTable">
+        <tr>
+            <th>Name</th>
+            <th>Student ID</th>
+            <th>Role</th>
+            <th>Membership</th>
+            <th>Reserved Locker</th>
+            <th>Left Locker</th>
+            <th>Status</th>
+        </tr>
+    </table>
+</div>
+<div>
+    <button id="saveButton" class="btn btn-primary my-4 d-none" onclick="saveChanges()">Save Changes</button>
+</div>
+
+<script>
+    const modifiedUsers = {}; // To store modified user data
+    const selectedLockerNumbers = [];
+    // Fetch user data using AJAX when the page loads
+    window.onload = function () {
+        fetchUsers();
+    };
+
+    function fetchUsers() {
+        const headers = new Headers();
+        var ack = localStorage.getItem("accessToken");
+        var rck = localStorage.getItem("refreshToken");
+        headers.append('accessToken',ack);
+        headers.append('refreshToken', rck);
+        const requestOptions = {
+            method: 'GET',
+            headers: headers
+        };
+        // Replace 'YOUR_BACKEND_API_URL' with the actual backend API URL
+        fetch('http://localhost:8080/admin/api/user',requestOptions)
+            .then(response => response.json())
+            .then(response => displayUsers(response.result))
+            .catch(error => console.error('Error fetching users:', error));
+    }
+
+    async function displayUsers(result) {
+        const listsResult = await fetchLists();
+        const table = document.getElementById('userTable');
+        table.innerHTML = `
+        <tr>
+            <th>Name</th>
+            <th>Student ID</th>
+            <th>Role</th>
+            <th>Membership</th>
+            <th>Reserved Locker</th>
+            <th>Left Locker</th>
+            <th>Status</th>
+        </tr>
+    `;
+
+        result.forEach(result => {
+            const row = table.insertRow();
+            row.insertCell().innerText = result.userName;
+            row.insertCell().innerText = result.studentNum;
+
+            // Create the role dropdown and set the selected option to the user's current role
+            const roleCell = row.insertCell();
+            const roleSelect = document.createElement('select');
+            roleSelect.name = `role-${result.studentNum}`;
+            roleSelect.onchange = () => onValueChange(result.studentNum);
+            listsResult.roleList.forEach(role => {
+                const option = new Option(role, role);
+                if (role === result.role) {
+                    option.selected = true;
+                }
+                roleSelect.appendChild(option);
+            });
+            roleCell.appendChild(roleSelect);
+
+            // Create the membership dropdown and set the selected option to the user's current membership
+            const membershipCell = row.insertCell();
+            const membershipSelect = document.createElement('select');
+            membershipSelect.name = `membership-${result.studentNum}`;
+            membershipSelect.onchange = () => onValueChange(result.studentNum);
+            listsResult.memberShipList.forEach(membership => {
+                const option = new Option(membership, membership);
+                if (membership === result.membership) {
+                    option.selected = true;
+                }
+                membershipSelect.appendChild(option);
+            });
+            membershipCell.appendChild(membershipSelect);
+
+            row.insertCell().innerText = result.lockerNum;
+
+            // Create the locker number dropdown and set the selected option to the user's current locker number
+            const lockerNumCell = row.insertCell();
+            const lockerNumSelect = document.createElement('select');
+            const emptyOption = new Option('-- Select --', null);
+            lockerNumSelect.name = `lockerNum-${result.studentNum}`;
+            lockerNumSelect.onchange = () => onValueChange(result.studentNum);
+            lockerNumSelect.appendChild(emptyOption);
+            listsResult.lockerIdList.forEach(lockerId => {
+                const option = new Option(lockerId, lockerId);
+                lockerNumSelect.appendChild(option);
+            });
+
+            lockerNumCell.appendChild(lockerNumSelect);
+
+
+
+            row.insertCell().innerText = result.status; // Display the user's status in the "Status" column
+        });
+    }
+
+
+    function onValueChange(userId) {
+        const role = document.querySelector(`select[name="role-${userId}"]`).value;
+        const membership = document.querySelector(`select[name="membership-${userId}"]`).value;
+        const lockerNumber = document.querySelector(`select[name="lockerNum-${userId}"]`).value;
+
+        const lockerNumberSelect = document.querySelector(`select[name="lockerNum-${userId}"]`);
+        const selectedLockerNumber = lockerNumberSelect.value;
+
+        // If no value is selected, set the select to its default option (empty value)
+        if (selectedLockerNumber === '') {
+            lockerNumberSelect.selectedIndex = 0;
+            return;
+        }
+
+        // Check if the selected locker number is already selected in other rows
+        if (selectedLockerNumbers.includes(selectedLockerNumber)) {
+            alert('이미 선택된 사물함 번호입니다.');
+            // Reset the select to its previous value (prevents selecting the same value)
+            lockerNumberSelect.value = modifiedUsers[userId]?.lockerNumber || '';
+            return;
+        }
+
+        // Update the selected locker numbers array
+        if (modifiedUsers[userId]?.lockerNumber) {
+            // Remove the previously selected locker number from the array
+            const index = selectedLockerNumbers.indexOf(modifiedUsers[userId].lockerNumber);
+            if (index !== -1) {
+                selectedLockerNumbers.splice(index, 1);
+            }
+        }
+
+        selectedLockerNumbers.push(selectedLockerNumber);
+        modifiedUsers[userId] = { role, membership, lockerNumber: selectedLockerNumber };
+    }
+
+    async function fetchLists() {
+        const headers = new Headers();
+        var ack = localStorage.getItem("accessToken");
+        var rck = localStorage.getItem("refreshToken");
+        headers.append('accessToken', ack);
+        headers.append('refreshToken', rck);
+        const requestOptions = {
+            method: 'GET',
+            headers: headers
+        };
+        // Replace 'YOUR_BACKEND_API_URL' with the actual backend API URL
+        const response = await fetch('http://localhost:8080/admin/api/list', requestOptions);
+        const data = await response.json();
+        return data.result;
+    }
+
+
+
+    function saveChanges() {
+        if (Object.keys(modifiedUsers).length === 0) {
+            alert("수정된 정보가 없습니다.")
+            return;
+        }
+        // Replace 'YOUR_BACKEND_API_URL' with the actual backend API URL
+        fetch('http://localhost:8080/admin/api/user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(modifiedUsers)
+        })
+            .then(response => response.json())
+            .then(data => console.log('Changes saved:', data))
+            .catch(error => console.error('Error saving changes:', error));
+    }
+</script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

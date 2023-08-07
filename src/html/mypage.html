@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>지능기전공학과 사물함예약</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/mypage.css">
+    <style>
+        #homeIconLink {
+            cursor: pointer; /* 아이콘을 올렸을 때 커서 모양을 바꿔줍니다. */
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="page-container">
+    <h2>마이페이지<a id="homeIconLink" href="index.html"><i class="fa-solid fa-house"></i></a></h2>
+    <p><strong>이름:</strong> Loading...</p>
+    <p><strong>학번:</strong> Loading...</p>
+    <p><strong>학생회비 납부 여부:</strong> Loading...</p>
+    <p><strong>사물함 번호:</strong> Loading...</p>
+    <button type="button" class="btn btn-primary" onclick="changePassword()">비밀번호 수정</button>
+
+    <!-- 로그아웃 버튼 -->
+    <button type="button" class="btn btn-danger" onclick="logout()">로그아웃</button>
+</div>
+
+<script>
+    function logout() {
+        // Ajax 요청 보내기 (이 부분은 로그아웃 API를 호출하는 부분입니다.)
+        $.ajax({
+            type: 'POST',
+            url: "http://54.180.70.111:8080/api/auth/logout", // 로그아웃 API 엔드포인트 URL을 넣어주세요
+            headers: {
+                'Content-Type': 'application/json',
+                'accessToken': localStorage.getItem("accessToken"),
+                'RefreshToken': localStorage.getItem("refreshToken")
+            },
+            success: function (response) {
+                alert("됐다");
+                localStorage.removeItem("accessToken");
+                localStorage.removeItem("refreshToken");
+                // 로그아웃 성공 시 login 페이지로 이동
+                window.location.href = "login.html";
+            },
+            error: function (error) {
+                alert("로그아웃에 실패하였습니다. 관리자에게 문의해주세요.");
+            }
+        });
+    }
+    //아이콘 클릭했을때 알림창뜸
+    function homeIconClick() {
+        // 여기에 클릭한 사용자 아이콘에 대한 동작을 추가합니다.
+        alert("사용자 아이콘을 클릭했습니다!");
+    }
+    function changePassword() {
+        // 비밀번호 수정 페이지로 이동
+        window.location.href = "modifiedPassword.html";
+    }
+    function fetchUserInfo() {
+        var ack = localStorage.getItem("accessToken");
+        var rck = localStorage.getItem("refreshToken");
+        // Ajax 요청 보내기 (이 부분은 사용자 정보를 서버에서 가져오는 부분입니다.)
+        $.ajax({
+            type: 'GET',
+            url: "http://54.180.70.111:8080/api/user/info", // 서버의 엔드포인트 URL을 넣어주세요
+            headers: {
+                'Content-Type': 'application/json',
+                'accessToken': ack,
+                'RefreshToken': rck
+            },
+            success: function (response) {
+                if (response.status == 200) {
+                    // 사용자 정보 가져오기 성공
+                    var userInfoContainer = document.querySelector(".page-container");
+                    userInfoContainer.innerHTML = `
+              <h2>마이페이지<a id="homeIconLink" href="index.html"><i class="fa-solid fa-house"></i></a></h2>
+              <p><strong>이름:</strong> ${response.result.userName}</p>
+              <p><strong>학번:</strong> ${response.result.userNum}</p>
+              <p><strong>학생회비 납부 여부:</strong> ${response.result.membership ? "납부함" : "미납"}</p>
+              <p><strong>사물함 번호:</strong> ${response.result.lockerNum!=null ? response.result.lockerNum : "X"}</p>
+              <button type="button" class="btn btn-primary" onclick="changePassword()">비밀번호 수정</button>
+
+              <!-- 로그아웃 버튼 -->
+              <button type="button" class="btn btn-danger" onclick="logout()">로그아웃</button>
+                `;
+                } else {
+                    alert("사용자 정보를 가져오는데 실패하였습니다.");
+                }
+            },
+            error: function (error) {
+                alert("관리자에게 문의해주세요.");
+            }
+        });
+    }
+
+    window.onload =function (){
+        fetchUserInfo(); // 사용자 정보 가져오기
+        document.getElementById("userIconLink").addEventListener("click", homeIconClick);
+    }
+</script>
+</body>
+</html>
