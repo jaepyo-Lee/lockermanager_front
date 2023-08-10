@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="kr">
 <head>
+    <meta charset="utf-8">
     <title>Admin Panel</title>
     <style>
         /* Add some basic styling to the page */
@@ -52,7 +53,8 @@
 </div>
 
 <script>
-    const modifiedUsers = {}; // To store modified user data
+    const modifiedLocker = {}; // To store modified user data
+    const modifiedUsers = {};
     const selectedLockerNumbers = [];
     // Fetch user data using AJAX when the page loads
     window.onload = function () {
@@ -70,7 +72,7 @@
             headers: headers
         };
         // Replace 'YOUR_BACKEND_API_URL' with the actual backend API URL
-        fetch('http://localhost:8080/admin/api/user',requestOptions)
+        fetch('http://54.180.70.111:8081/admin/api/user',requestOptions)
             .then(response => response.json())
             .then(response => displayUsers(response.result))
             .catch(error => console.error('Error fetching users:', error));
@@ -100,7 +102,7 @@
             const roleCell = row.insertCell();
             const roleSelect = document.createElement('select');
             roleSelect.name = `role-${result.studentNum}`;
-            roleSelect.onchange = () => onValueChange(result.studentNum);
+            roleSelect.onchange = () => onValueChange(result.studentNum,"role");
             listsResult.roleList.forEach(role => {
                 const option = new Option(role, role);
                 if (role === result.role) {
@@ -114,7 +116,7 @@
             const membershipCell = row.insertCell();
             const membershipSelect = document.createElement('select');
             membershipSelect.name = `membership-${result.studentNum}`;
-            membershipSelect.onchange = () => onValueChange(result.studentNum);
+            membershipSelect.onchange = () => onValueChange(result.studentNum,"membership");
             listsResult.memberShipList.forEach(membership => {
                 const option = new Option(membership, membership);
                 if (membership === result.membership) {
@@ -129,9 +131,8 @@
             // Create the locker number dropdown and set the selected option to the user's current locker number
             const lockerNumCell = row.insertCell();
             const lockerNumSelect = document.createElement('select');
-            const emptyOption = new Option('-- Select --', null);
+            const emptyOption = new Option('-- Select --', '');
             lockerNumSelect.name = `lockerNum-${result.studentNum}`;
-            lockerNumSelect.onchange = () => onValueChange(result.studentNum);
             lockerNumSelect.appendChild(emptyOption);
             listsResult.lockerIdList.forEach(lockerId => {
                 const option = new Option(lockerId, lockerId);
@@ -139,6 +140,7 @@
             });
 
             lockerNumCell.appendChild(lockerNumSelect);
+            lockerNumSelect.onchange = () => onValueChange(result.studentNum,"locker");
 
 
 
@@ -147,40 +149,45 @@
     }
 
 
-    function onValueChange(userId) {
+    function onValueChange(userId,type) {
         const role = document.querySelector(`select[name="role-${userId}"]`).value;
         const membership = document.querySelector(`select[name="membership-${userId}"]`).value;
         const lockerNumber = document.querySelector(`select[name="lockerNum-${userId}"]`).value;
-
         const lockerNumberSelect = document.querySelector(`select[name="lockerNum-${userId}"]`);
-        const selectedLockerNumber = lockerNumberSelect.value;
-
-        // If no value is selected, set the select to its default option (empty value)
-        if (selectedLockerNumber === '') {
-            lockerNumberSelect.selectedIndex = 0;
-            return;
-        }
-
-        // Check if the selected locker number is already selected in other rows
-        if (selectedLockerNumbers.includes(selectedLockerNumber)) {
-            alert('이미 선택된 사물함 번호입니다.');
-            // Reset the select to its previous value (prevents selecting the same value)
-            lockerNumberSelect.value = modifiedUsers[userId]?.lockerNumber || '';
-            return;
-        }
-
-        // Update the selected locker numbers array
-        if (modifiedUsers[userId]?.lockerNumber) {
-            // Remove the previously selected locker number from the array
-            const index = selectedLockerNumbers.indexOf(modifiedUsers[userId].lockerNumber);
-            if (index !== -1) {
-                selectedLockerNumbers.splice(index, 1);
+        var chk = 0;
+        if(type=="locker"){
+            if(lockerNumber==''){
+                lockerNumberSelect.selectedIndex = 0;
+                if(!modifiedLocker[userId]){//이전에 무언가를 선택했던 상태라면
+                    selectedLockerNumbers.pop(modifiedLocker[userId]);
+                    modifiedLocker[userId].delete();
+                    chk = 1;
+                }
             }
-        }
+            else if(selectedLockerNumbers.includes(lockerNumber)){
+                alert("사물함 중복선택입니다. 다시 확인해주세요.")
+                if(modifiedLocker[userId]){
+                    lockerNumberSelect.value = modifiedLocker[userId];
+                }else{
+                    lockerNumberSelect.selectedIndex = 0;
+                }
+            }
+            else{
+                if(modifiedLocker[userId]){
+                    selectedLockerNumbers.pop(modifiedLocker[userId]);
+                }
+                selectedLockerNumbers.push(lockerNumber);
+                modifiedLocker[userId]=lockerNumber;
+                chk = 1;
+            }
 
-        selectedLockerNumbers.push(selectedLockerNumber);
-        modifiedUsers[userId] = { role, membership, lockerNumber: selectedLockerNumber };
+        }
+        if(chk==1){
+            modifiedUsers[userId] = { role, membership, lockerNumber: lockerNumber };
+        }
+        alert(JSON.stringify(modifiedUsers));
     }
+
 
     async function fetchLists() {
         const headers = new Headers();
@@ -193,7 +200,7 @@
             headers: headers
         };
         // Replace 'YOUR_BACKEND_API_URL' with the actual backend API URL
-        const response = await fetch('http://localhost:8080/admin/api/list', requestOptions);
+        const response = await fetch('http://54.180.70.111:8081/admin/api/list', requestOptions);
         const data = await response.json();
         return data.result;
     }
@@ -205,18 +212,33 @@
             alert("수정된 정보가 없습니다.")
             return;
         }
+        var modifiedUsersInfo=[]
+        for(var key in modifiedUsers){
+            modifiedUsersInfo.push(
+                {
+                    studentNum: key,
+                    role: modifiedUsers[key].role,
+                    membership: modifiedUsers[key].membership,
+                    lockerNumber: modifiedUsers[key].lockerNumber
+                }
+            )
+        }
+        alert(JSON.stringify(modifiedUsersInfo));
         // Replace 'YOUR_BACKEND_API_URL' with the actual backend API URL
-        fetch('http://localhost:8080/admin/api/user', {
-            method: 'POST',
+        var ack = localStorage.getItem("accessToken");
+        var rck = localStorage.getItem("refreshToken");
+        fetch('http://54.180.70.111:8081/admin/api/user/modifiedInfo', {
+            method: 'PUT',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'accessToken': ack,
+                'refreshToken': rck
             },
-            body: JSON.stringify(modifiedUsers)
+            body: JSON.stringify(modifiedUsersInfo) // Send the modifiedUsers array as JSON in the request body
         })
             .then(response => response.json())
             .then(data => console.log('Changes saved:', data))
-            .catch(error => console.error('Error saving changes:', error));
-    }
+            .catch(error => console.error('Error saving changes:', error))};
 </script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
