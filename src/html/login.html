@@ -26,6 +26,65 @@
         .login-wrapper {
             margin-top: -50px; /* Adjust this value to move the login section up */
         }
+        .login-wrapper{
+            width: 400px;
+            height: 350px;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+
+        .login-wrapper > h2{
+            font-size: 24px;
+            color: #6A24FE;
+            margin-bottom: 20px;
+        }
+        #login-form > input{
+            width: 100%;
+            height: 48px;
+            padding: 0 10px;
+            box-sizing: border-box;
+            margin-bottom: 16px;
+            border-radius: 6px;
+            background-color: #F8F8F8;
+        }
+        #login-form > input::placeholder{
+            color: #D2D2D2;
+        }
+        #login-form > input[type="submit"]{
+            color: #fff;
+            font-size: 16px;
+            background-color: #6A24FE;
+            margin-top: 20px;
+        }
+        #login-form > input[type="checkbox"]{
+            display: none;
+        }
+        #login-form > label{
+            color: #999999;
+        }
+        #login-form input[type="checkbox"] + label{
+            cursor: pointer;
+            padding-left: 26px;
+            background-image: url("checkbox.png");
+            background-repeat: no-repeat;
+            background-size: contain;
+        }
+        #login-form input[type="checkbox"]:checked + label{
+            background-image: url("checkbox-active.png");
+            background-repeat: no-repeat;
+            background-size: contain;
+        }
+
+        .container {
+            text-align: center;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
     </style>
 </head>
 <body>
@@ -57,7 +116,7 @@
             // 서버로 POST 요청 보내기
             $.ajax({
                 type: "POST",
-                url: "http://54.180.70.111:8081/api/auth/login", // 실제 서버 URL로 대체해야 합니다
+                url: "http://localhost:8081/api/auth/login", // 실제 서버 URL로 대체해야 합니다
                 data: formData,
                 success: function(response) {
                     if (response.status==200) {
@@ -71,14 +130,19 @@
                         window.location.replace("index.html");
                     } else {
                         // 로그인이 실패한 경우 에러 메시지를 표시
-                        alert("로그인 정보를 확인해주세요");
+                        alert(response.message);
                     }
                 },
-                error: function() {
+                error: function(error) {
+                    var responseJSON = error.responseJSON;
+                    if (responseJSON.status == 400) {
+                        alert(responseJSON.message);
+                    } else if (responseJSON.status == 500) {
+                        alert("관리자에게 문의해주세요.");
+                    }
                     // 서버 요청이 실패하면 실행되는 함수
                     // 로그인이 실패한 경우 에러 메시지를 표시할 수 있습니다
                     // 예를 들어, 경고 메시지 표시:
-                    alert("로그인에 실패했습니다. 자격증명을 확인하고 다시 시도해주세요.");
                 }
             });
         });

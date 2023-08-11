@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -107,7 +106,7 @@
                     'RefreshToken': rck
                 },
                 success: function (response) {
-                    if (response.status == 200) {
+                    if (response.status === 200) {
                         var startDateTime = response.result.startDateTime;
                         var endDateTime = response.result.endDateTime;
                         var startTimeElement = document.getElementById("startTime");
@@ -138,8 +137,8 @@
                     'RefreshToken': rck
                 },
                 success: function (response) {
-                    if (response.status == 200) {
-                        if(response.result==true){
+                    if (response.status === 200) {
+                        if(response.result===true){
                             // User is authorized, show the timeSettingLink icon
                             document.getElementById("timeSettingLink").style.display = "inline-block";
                             // Add click event to the timeSettingLink to redirect to the setting.html page
@@ -236,7 +235,6 @@
             var rck = localStorage.getItem("refreshToken");
             // 사용자가 확인을 눌렀을 때의 동작
             if (confirm(confirmMessage)) {
-
                 // Ajax 요청 보내기 (이 부분은 예약 정보를 서버에 보내는 부분입니다.)
                 $.ajax({
                     type: 'POST',
@@ -248,34 +246,30 @@
                         'RefreshToken': rck
                     },
                     success: function (response) {
-                        if (response.status == 200) {
-                            alert("예약자 : " + response.result.studentNum + "사물함 번호 : " + response.result.lockerNum);
+                        if (response.status === 200) {
+                            alert("예약자 : " + response.result.studentNum + "사물함 번호 : " + response.result.lockerNum + "\n예약이 완료되었습니다.");
                             alert(response.message);
                             location.reload();
                         }
                     },
                     error: function (error) {
                         var responseJSON = error.responseJSON;
-                        if(responseJSON.status==400){
+                        if (responseJSON.status == 400) {
                             alert(responseJSON.message);
                             location.reload();
-                        }else if(responseJSON.status==500){
+
+                        } else if (responseJSON.status == 500) {
                             alert("관리자에게 문의해주세요.");
                             location.reload();
-                        }/*else if(error.code=="L003"){
-
-                                }else if(error.code=="L004"){
-
-                                }*!/*/
-                        // 오류 처리
+                        }
                     }
                 });
             } else {
                 // 사용자가 취소를 눌렀을 때의 동작
                 alert("예약이 취소되었습니다.");
             }
-            location.reload();
         }
+
     </script>
     </tbody>
 </table>
@@ -331,10 +325,10 @@
     }
 
     function addZeros(num, digit) { // 자릿수 맞춰주기
-        var zero = '';
+        let zero = '';
         num = num.toString();
         if (num.length < digit) {
-            for (i = 0; i < digit - num.length; i++) {
+            for (let i = 0; i < digit - num.length; i++) {
                 zero += '0';
             }
         }
