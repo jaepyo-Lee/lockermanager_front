@@ -60,7 +60,7 @@
     // AJAX request to set reservation time
     $.ajax({
       type: 'POST',
-      url: "http://localhost:8081/admin/api/locker/reset", // Replace with the correct endpoint URL for setting reservation time on the server
+      url: "http://ime-locker.shop:8082/admin/api/resevation/reset", // Replace with the correct endpoint URL for setting reservation time on the server
       headers: {
         'Content-Type': 'application/json',
         'accessToken': ack,
@@ -91,7 +91,7 @@
     // AJAX request to set reservation time
     $.ajax({
       type: 'POST',
-      url: "http://54.180.70.111:8081/admin/api/locker/time", // Replace with the correct endpoint URL for setting reservation time on the server
+      url: "http://ime-locker.shop:8082/admin/api/locker/time", // Replace with the correct endpoint URL for setting reservation time on the server
       data: JSON.stringify(requestData),
       headers: {
         'Content-Type': 'application/json',

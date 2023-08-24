@@ -16,7 +16,22 @@
             cursor: pointer;
             text-align: center;
         }
-
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-size: 1.2em;
+        }
+        .page-container {
+            border: 1px solid black;
+            padding: 20px;
+            text-align: center;
+        }
+        .page-container p {
+            text-align: left;
+        }
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
@@ -38,7 +53,7 @@
         // Ajax 요청 보내기 (이 부분은 로그아웃 API를 호출하는 부분입니다.)
         $.ajax({
             type: 'POST',
-            url: "http://54.180.70.111:8081/api/auth/logout", // 로그아웃 API 엔드포인트 URL을 넣어주세요
+            url: "http://ime-locker.shop:8082/api/auth/logout", // 로그아웃 API 엔드포인트 URL을 넣어주세요
             headers: {
                 'Content-Type': 'application/json',
                 'accessToken': localStorage.getItem("accessToken"),
@@ -67,10 +82,10 @@
         // Ajax 요청 보내기 (이 부분은 사용자 정보를 서버에서 가져오는 부분입니다.)
         $.ajax({
             type: 'GET',
-            url: "http://54.180.70.111:8081/api/user/info", // 서버의 엔드포인트 URL을 넣어주세요
+            url: "http://ime-locker.shop:8082/api/user/info", // 서버의 엔드포인트 URL을 넣어주세요
             headers: {
                 'Content-Type': 'application/json',
-                'accessToken': ack,
+                'AccessToken': ack,
                 'RefreshToken': rck
             },
             success: function (response) {
@@ -101,8 +116,8 @@
         var rck = localStorage.getItem("refreshToken");
         // Ajax 요청 보내기 (이 부분은 사용자 정보를 서버에서 가져오는 부분입니다.)
         $.ajax({
-            type: 'PUT',
-            url: "http://54.180.70.111:8081/api/user", // 서버의 엔드포인트 URL을 넣어주세요
+            type: 'DELETE',
+            url: "http://ime-locker.shop:8082/api/reservation", // 서버의 엔드포인트 URL을 넣어주세요
             headers: {
                 'Content-Type': 'application/json',
                 'accessToken': ack,
