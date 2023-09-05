@@ -56,7 +56,7 @@
     <h1 align="center" id="indextitle" >지능기전공학과 사물함 예약</h1>
 </div>
 <div style="text-align: center; margin-top: 20px;">
-    <h2 id="clock">현재시간:</h2>
+<!--    <h2 id="clock">현재시간:</h2>-->
     <h2 id="startTime">예약시작시간:</h2>
     <h2 id="endTime">예약마감시간:</h2>
 
@@ -100,7 +100,7 @@
             // AJAX request to get next reservation time
             $.ajax({
                 type: 'GET',
-                url: "http://54.180.70.111:8081/api/locker/period", // Replace this with the correct endpoint URL for getting next reservation time
+                url: "http://ime-locker.shop:8082/api/locker/period", // Replace this with the correct endpoint URL for getting next reservation time
                 headers: {
                     'accessToken': ack,
                     'RefreshToken': rck
@@ -131,7 +131,7 @@
             // AJAX request to check user authorization
             $.ajax({
                 type: 'GET',
-                url: "http://54.180.70.111:8081/api/user/role", // Replace this with the correct endpoint URL for checking authorization
+                url: "http://ime-locker.shop:8082/api/user/role", // Replace this with the correct endpoint URL for checking authorization
                 headers: {
                     'accessToken': ack,
                     'RefreshToken': rck
@@ -194,7 +194,7 @@
             // Ajax 요청 보내기 (이 부분은 예약된 사물함 목록을 서버에서 가져오는 부분입니다.)
             $.ajax({
                 type: 'GET',
-                url: "http://54.180.70.111:8081/api/locker/reserved", // 서버의 엔드포인트 URL을 넣어주세요
+                url: "http://ime-locker.shop:8082/api/reservation/reserved", // 서버의 엔드포인트 URL을 넣어주세요
                 headers: {
                     'accessToken': ack,
                     'RefreshToken': rck
@@ -238,7 +238,7 @@
                 // Ajax 요청 보내기 (이 부분은 예약 정보를 서버에 보내는 부분입니다.)
                 $.ajax({
                     type: 'POST',
-                    url: "http://localhost:8081/api/locker/register", // 서버의 엔드포인트 URL을 넣어주세요
+                    url: "http://ime-locker.shop:8082/api/reservation/register", // 서버의 엔드포인트 URL을 넣어주세요
                     data: JSON.stringify(requestData),
                     headers: {
                         'Content-Type': 'application/json',
@@ -281,7 +281,7 @@
         var rck = localStorage.getItem("refreshToken");
         $.ajax({
             type: 'GET',
-            url: "http://54.180.70.111:8081/api/locker/livetime", // Replace this with the correct endpoint URL for checking authorization
+            url: "http://ime-locker.shop:8082/api/locker/livetime", // Replace this with the correct endpoint URL for checking authorization
             headers: {
                 'accessToken': ack,
                 'RefreshToken': rck

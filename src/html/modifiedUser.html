@@ -48,11 +48,13 @@
         </tr>
     </table>
 </div>
+
 <div>
     <button id="saveButton" class="btn btn-primary my-4 d-none" onclick="saveChanges()">Save Changes</button>
 </div>
 
 <script>
+
     const modifiedLocker = {}; // To store modified user data
     const modifiedUsers = {};
     const selectedLockerNumbers = [];
@@ -72,7 +74,7 @@
             headers: headers
         };
         // Replace 'YOUR_BACKEND_API_URL' with the actual backend API URL
-        fetch('http://54.180.70.111:8081/admin/api/user',requestOptions)
+        fetch('http://ime-locker.shop:8082/admin/api/user',requestOptions)
             .then(response => response.json())
             .then(response => displayUsers(response.result))
             .catch(error => console.error('Error fetching users:', error));
@@ -206,7 +208,7 @@
             headers: headers
         };
         // Replace 'YOUR_BACKEND_API_URL' with the actual backend API URL
-        const response = await fetch('http://54.180.70.111:8081/admin/api/list', requestOptions);
+        const response = await fetch('http://ime-locker.shop:8082/admin/api/list', requestOptions);
         const data = await response.json();
         return data.result;
     }
@@ -233,7 +235,7 @@
         // Replace 'YOUR_BACKEND_API_URL' with the actual backend API URL
         var ack = localStorage.getItem("accessToken");
         var rck = localStorage.getItem("refreshToken");
-        fetch('http://localhost:8081/admin/api/user/modifiedInfo', {
+        fetch('http://ime-locker.shop:8082/admin/api/user/modifiedInfo', {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -242,10 +244,13 @@
             },
             body: JSON.stringify(modifiedUsersInfo) // Send the modifiedUsers array as JSON in the request body
         })
+
             .then(response => response.json())
-            .then(data => console.log('Changes saved:', data))
-            .catch(error => console.error('Error saving changes:', error))
-        location.reload();
+            .then(data => {
+                console.log('Changes saved:', data);
+                location.reload();
+            })
+            .catch(error => console.error('Error saving changes:', error));
     };
 </script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
